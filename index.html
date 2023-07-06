@@ -1,4 +1,3 @@
-</html>
 <!DOCTYPE html>
 <html>
 
@@ -27,6 +26,7 @@
     </div>
   </div>
   <button id="addObjectButton">Add Object</button>
+  <button id="resetButton">Reset</button>
 
   <script src="p2.min.js"></script>
   <script src="p2.renderer.min.js"></script>
@@ -51,9 +51,20 @@
 
         let objectContainer = document.getElementById('objectContainer');
         let addObjectButton = document.getElementById('addObjectButton');
+        let resetButton = document.getElementById('resetButton');
 
         addObjectButton.addEventListener('click', function () {
           createObject();
+        });
+
+        resetButton.addEventListener('click', function () {
+          objectContainer.innerHTML = '';
+
+          objects.forEach(function (object) {
+            world.removeBody(object.body);
+          });
+
+          objects = [];
         });
 
         function createObject() {
