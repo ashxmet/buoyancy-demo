@@ -1,3 +1,4 @@
+</html>
 <!DOCTYPE html>
 <html>
 
@@ -12,15 +13,20 @@
     canvas {
       display: block;
     }
+
+    .object-container {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 
 <body>
-  <input type="range" id="massSlider1" min="0.1" max="100" step="0.1" value="1" />
-  <span id="massValue1">1</span>
-  <br>
-  <input type="range" id="massSlider2" min="0.1" max="100" step="0.1" value="1" />
-  <span id="massValue2">1</span>
+  <div id="objectContainer">
+    <div class="object-container">
+
+    </div>
+  </div>
+  <button id="addObjectButton">Add Object</button>
 
   <script src="p2.min.js"></script>
   <script src="p2.renderer.min.js"></script>
@@ -41,56 +47,74 @@
         plane.addShape(planeShape);
         world.addBody(plane);
 
-        let body, body2;
+        let objects = [];
 
-        let massSlider1 = document.getElementById('massSlider1');
-        let massSlider2 = document.getElementById('massSlider2');
+        let objectContainer = document.getElementById('objectContainer');
+        let addObjectButton = document.getElementById('addObjectButton');
 
-        let massValue1 = document.getElementById('massValue1');
-        let massValue2 = document.getElementById('massValue2');
-
-        // Update masses on slider change
-        massSlider1.addEventListener('input', function () {
-          body.mass = parseFloat(massSlider1.value);
-          massValue1.textContent = massSlider1.value;
+        addObjectButton.addEventListener('click', function () {
+          createObject();
         });
 
-        massSlider2.addEventListener('input', function () {
-          body2.mass = parseFloat(massSlider2.value);
-          massValue2.textContent = massSlider2.value;
-        });
+        function createObject() {
+          let objectElement = document.createElement('div');
+          objectElement.classList.add('object-container');
 
-        body = new p2.Body({
-          mass: parseFloat(massSlider1.value),
-          position: [0, 2],
-          angularVelocity: 0.5
-        });
+          let massSlider = document.createElement('input');
+          massSlider.type = 'range';
+          massSlider.classList.add('massSlider');
+          massSlider.min = '0.1';
+          massSlider.max = '100';
+          massSlider.step = '0.1';
+          massSlider.value = '1';
 
-        body2 = new p2.Body({
-          mass: parseFloat(massSlider2.value),
-          position: [-3, 2],
-          angularVelocity: 1
-        });
-        console.log(body);
-        body.addShape(new p2.Circle({ radius: 0.5 }), [0.5, 0], 0);
-        body.addShape(new p2.Circle({ radius: 0.5 }), [-0.5, 0], 0);
-        world.addBody(body);
+          let massValue = document.createElement('span');
+          massValue.classList.add('massValue');
+          massValue.textContent = '1';
 
-        body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [1, 0], 0);
-        body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [0.5, 0], 0);
-        body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-0.5, 0], 0);
-        body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-1, 0], 0);
-        world.addBody(body2);
+          let massUnit = document.createElement('span');
+          massUnit.classList.add('massUnit');
+          massUnit.textContent = 'kg';
+
+          objectElement.appendChild(massSlider);
+          objectElement.appendChild(massValue);
+          objectElement.appendChild(massUnit);
 
 
+          objectElement.appendChild(massSlider);
+          objectElement.appendChild(massValue);
+          objectContainer.appendChild(objectElement);
 
+          let object = new p2.Body({
+            mass: parseFloat(massSlider.value),
+            position: [0, 2],
+            angularVelocity: 0.5
+          });
+          object.addShape(new p2.Circle({ radius: 0.5 }), [0.5, 0], 0);
+          object.addShape(new p2.Circle({ radius: 0.5 }), [-0.5, 0], 0);
+          world.addBody(object);
 
+          objects.push({
+            body: object,
+            massSlider: massSlider,
+            massValue: massValue
+          });
 
+          // Update masses on slider change
+          massSlider.addEventListener('input', function () {
+            object.mass = parseFloat(massSlider.value);
+            massValue.textContent = massSlider.value;
+          });
+        }
+
+        createObject(); // Create initial object
 
         // Add forces every step
         world.on('postStep', function () {
-          applyAABBBuoyancyForces(body, plane.position, k, c);
-          applyAABBBuoyancyForces(body2, plane.position, k, c);
+          for (let i = 0; i < objects.length; i++) {
+            let obj = objects[i];
+            applyAABBBuoyancyForces(obj.body, plane.position, k, c);
+          }
         });
 
         let shapePosition = [0, 0];
